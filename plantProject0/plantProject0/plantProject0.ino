@@ -1,22 +1,28 @@
-#include <dht.h>
 #include <LiquidCrystal_I2C.h>
+
+#include <dht.h>
 #include <string.h>
 dht DHT;
-int tempType = 0;
 #define DHT11PIN 2
 #define AOUT_PIN A0
 const int waterState = 3; 
 const int pumpPin = 4;
-const int prPIN = A1;
+const int prPIN = A5;
 const int mThreshold = 350;
+const int pumpSet = 10;
+const int pumpLED = 9;
+int buttonValue = 0;
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 void setup() {
+  Serial.begin(9600);
+  Serial.println("Arduino On");
   pinMode(waterState, OUTPUT);
   pinMode(pumpPin, OUTPUT);
   pinMode(prPIN, INPUT);
-  Serial.begin(9600);
+  pinMode(pumpSet, INPUT_PULLUP);
+  pinMode(pumpLED,OUTPUT);
   lcd.init();
   delay(1000);
   lcd.setCursor(0,0);
@@ -39,6 +45,17 @@ void loop() {
   lcdSM(soilMoisture);
   lcdLight(PRreading);
   delay(1000);
+  Serial.println(digitalRead(pumpSet));
+  Serial.println(buttonValue);
+  if(digitalRead(pumpSet) == 0){
+    buttonValue += 1;
+  }
+  if(buttonValue % 2 != 0){
+    digitalWrite(pumpLED, HIGH);
+  }
+  else{
+    digitalWrite(pumpLED, LOW);
+  }
   
 }
 
@@ -74,19 +91,19 @@ void lcdLight(int lightInput){
   String lightState = "Blinding";
   lcd.setCursor(0,1);
   lcd.print("Light: ");
-  if(lightInput >= 300){
+  if(lightInput >= 400){
     lightState = "Luminous";
   }
-  if(lightInput >= 500){
+  if(lightInput >= 600){
     lightState = "Bright";
   }
-  if(lightInput >= 600){
+  if(lightInput >= 700){
     lightState = "Moderate";
   }
-  if(lightInput >= 700){
+  if(lightInput >= 800){
     lightState = "Dim";
   }
-  if(lightInput >= 950){
+  if(lightInput >= 900){
     lightState = "Dark";
   }
    
@@ -97,7 +114,7 @@ void lcdLight(int lightInput){
 }
 
 void checkMoisture(int smInput){
-  if(smInput > mThreshold){
+  if(smInput > mThreshold && buttonValue % 2 != 0){
     digitalWrite(waterState, HIGH);
     pumpState("ON");
   }
