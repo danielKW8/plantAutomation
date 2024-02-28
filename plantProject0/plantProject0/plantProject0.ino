@@ -5,12 +5,13 @@
 dht DHT;
 #define DHT11PIN 2
 #define AOUT_PIN A0
-const int waterState = 3; 
+const int pumpSwitch = 3; 
 const int pumpPin = 4;
 const int prPIN = A5;
 const int mThreshold = 350;
-const int pumpSet = 10;
+const int pumpSet = 5;
 const int pumpLED = 9;
+const int waterState = 6;
 int buttonValue = 0;
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -21,7 +22,7 @@ void setup() {
   pinMode(waterState, OUTPUT);
   pinMode(pumpPin, OUTPUT);
   pinMode(prPIN, INPUT);
-  pinMode(pumpSet, INPUT_PULLUP);
+  pinMode(pumpSet, INPUT);
   pinMode(pumpLED,OUTPUT);
   lcd.init();
   delay(1000);
@@ -40,23 +41,22 @@ void loop() {
   lcdHumidity(humidity);
   lcdTemp(temperature);
   delay(1000);
-  checkMoisture(soilMoisture);
-  lcd.clear();
-  lcdSM(soilMoisture);
-  lcdLight(PRreading);
-  delay(1000);
   Serial.println(digitalRead(pumpSet));
   Serial.println(buttonValue);
-  if(digitalRead(pumpSet) == 0){
+  if(digitalRead(pumpSet) == HIGH){
     buttonValue += 1;
   }
   if(buttonValue % 2 != 0){
     digitalWrite(pumpLED, HIGH);
+    Serial.println("PUMP LED ON");
   }
   else{
     digitalWrite(pumpLED, LOW);
   }
-  
+  checkMoisture(soilMoisture);
+  lcd.clear();
+  lcdSM(soilMoisture);
+  delay(1000);
 }
 
 void lcdHumidity(int humidityInput){
@@ -87,10 +87,11 @@ void lcdSM(int smInput){
   Serial.println(smInput);
 }
 
+/*
 void lcdLight(int lightInput){
   String lightState = "Blinding";
-  lcd.setCursor(0,1);
-  lcd.print("Light: ");
+  //lcd.setCursor(0,1);
+  //lcd.print("Light: ");
   if(lightInput >= 400){
     lightState = "Luminous";
   }
@@ -107,11 +108,12 @@ void lcdLight(int lightInput){
     lightState = "Dark";
   }
    
-  lcd.print(lightState);
+  //lcd.print(lightState);
   Serial.print("Light: ");
   Serial.println(lightInput);
   Serial.println(lightState);
 }
+*/
 
 void checkMoisture(int smInput){
   if(smInput > mThreshold && buttonValue % 2 != 0){
