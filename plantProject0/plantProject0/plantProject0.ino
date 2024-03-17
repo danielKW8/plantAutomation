@@ -119,6 +119,7 @@ void checkMoisture(int smInput){
   if(smInput > mThreshold && buttonValue % 2 != 0){
     digitalWrite(waterState, HIGH);
     pumpState("ON");
+    delay(2000);
   }
   else{
     digitalWrite(waterState,LOW);
